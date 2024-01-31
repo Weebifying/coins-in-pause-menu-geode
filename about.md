@@ -1,3 +1,3 @@
-# Template Mod
+# Coins in Pause Menu
 
-Edit about.md to change this
+Shows the current level's coins in the pause menu
