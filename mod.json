@@ -9,5 +9,10 @@
 	"name": "Coins in Pause Menu",
 	"developer": "Weebify",
 	"description": "Shows the current level's coins in the pause menu",
-	"repository": "https://github.com/Weebifying/coins-in-pause-menu-geode"
+	"repository": "https://github.com/Weebifying/coins-in-pause-menu-geode",
+	"resources": {
+		"files": [
+			"resources/ss.png"
+		]
+	}
 }
