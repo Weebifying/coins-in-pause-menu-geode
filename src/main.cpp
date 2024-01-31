@@ -8,11 +8,8 @@ class $modify(PauseLayer) {
 		PauseLayer::customSetup();
 
 		auto winSize = CCDirector::get()->getWinSize();
-
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
 
-		// iron coin: verified
-		// bronze coin: pending
 		auto levelIDInt =  level->m_levelID.value();
 		auto levelID = std::to_string(levelIDInt);
 		auto levelIDKey = std::string(level->getCoinKey(levelIDInt));
@@ -27,6 +24,8 @@ class $modify(PauseLayer) {
 		log::info("suffix: {}", weeklySuffix);
 		log::info("are coins verified: {}", areCoinsVerified);
 
+		// silver coin: verified
+		// bronze coin: pending
 		auto verifiedCoins = GameStatsManager::sharedState()->m_verifiedUserCoins;
 		auto pendingCoins = GameStatsManager::sharedState()->m_pendingUserCoins;
 
@@ -67,14 +66,18 @@ class $modify(PauseLayer) {
 		if (level->m_coins >= 2) this->addChild(coin2Slot);
 		if (level->m_coins >= 3) this->addChild(coin3Slot);
 
+		// silver coin in levels on the server
 		if (areCoinsVerified) {
 			if (verifiedCoins->objectForKey(levelID + "_1" + weeklySuffix)) this->addChild(coin1);
 			if (verifiedCoins->objectForKey(levelID + "_2" + weeklySuffix)) this->addChild(coin2);
 			if (verifiedCoins->objectForKey(levelID + "_3" + weeklySuffix)) this->addChild(coin3);
+		// silver coin in user created levels that havent been uploaded
+		// hence the level id 0
 		} else if (levelIDInt == 0) {
 			if (level->m_firstCoinVerified.value()) this->addChild(coin1);
 			if (level->m_secondCoinVerified.value()) this->addChild(coin2);
 			if (level->m_thirdCoinVerified.value()) this->addChild(coin3);
+		// bronze coin
 		} else {
 			if (pendingCoins->objectForKey(levelID + "_1" + weeklySuffix)) this->addChild(coin1);
 			if (pendingCoins->objectForKey(levelID + "_2" + weeklySuffix)) this->addChild(coin2);
