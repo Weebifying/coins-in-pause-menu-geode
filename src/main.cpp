@@ -19,11 +19,11 @@ class $modify(PauseLayer) {
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 		
 		
-		log::info("coins: {}", level->m_coins);
-		log::info("id: {}", levelID);
-		log::info("id key: {}", levelIDKey);;
-		log::info("suffix: {}", weeklySuffix);
-		log::info("aaaaaa: {}", GameStatsManager::sharedState()->getCollectedCoinsForLevel(level)); 
+		// log::info("coins: {}", level->m_coins);
+		// log::info("id: {}", levelID);
+		// log::info("id key: {}", levelIDKey);;
+		// log::info("suffix: {}", weeklySuffix);
+		// log::info("aaaaaa: {}", GameStatsManager::sharedState()->getCollectedCoinsForLevel(level)); 
 
 		// check if level is a main level
 		// NOT accurate since level id 2004 still exists on the server but idgaf :D
