@@ -4,7 +4,7 @@
 		"win": "2.204",
 		"android": "*"
 	},
-	"version": "v1.0.0",
+	"version": "v1.0.1",
 	"id": "weebify.coins_in_pause_menu",
 	"name": "Coins in Pause Menu",
 	"developer": "Weebify",
