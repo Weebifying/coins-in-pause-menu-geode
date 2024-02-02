@@ -1,6 +1,8 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 
+#include <algorithm>
+
 using namespace geode::prelude;
 
 class $modify(PauseLayer) {

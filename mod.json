@@ -11,7 +11,7 @@
 	"description": "Shows the current level's coins in the pause menu",
 	"repository": "https://github.com/Weebifying/coins-in-pause-menu-geode",
 	"resources": {
-		"files": [
+		"sprites": [
 			"resources/ss.png"
 		]
 	}
