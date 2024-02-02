@@ -62,6 +62,7 @@ class $modify(PauseLayer) {
 			// bronze coin: pending
 			auto verifiedCoins = GameStatsManager::sharedState()->m_verifiedUserCoins;
 			auto pendingCoins = GameStatsManager::sharedState()->m_pendingUserCoins;
+			log::info("step 4");
 
 			// IDK LOL 
 			auto coin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
@@ -93,12 +94,13 @@ class $modify(PauseLayer) {
 			coin3->setScale(0.6);
 			coin3->setPosition({winSize.width/2 + coin1Slot->getContentSize().width*(2.f - level->m_coins/2.5f), winSize.height/11.5f});
 			coin3->setZOrder(9);
+			log::info("step 5");
 
 			// self explanatory
 			if (level->m_coins >= 1) this->addChild(coin1Slot);
 			if (level->m_coins >= 2) this->addChild(coin2Slot);
 			if (level->m_coins >= 3) this->addChild(coin3Slot);
-
+			log::info("step 6");
 			// silver coin in levels on the server
 			if (areCoinsVerified) {
 				if (verifiedCoins->objectForKey(levelID + "_1" + weeklySuffix)) this->addChild(coin1);
@@ -123,8 +125,10 @@ class $modify(PauseLayer) {
 				coin2->setColor({255, 175, 75});
 				coin3->setColor({255, 175, 75});
 			}
+			log::info("step 7");
 		}
 		
 		free(mainLevels);
+		log::info("step 8");
 	}
 };
