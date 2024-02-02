@@ -30,7 +30,7 @@ class $modify(PauseLayer) {
 		// check if level is a main level
 		// NOT accurate since level id 2004 still exists on the server but idgaf :D
 		// if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
-		if (true) {
+		if (false) {
 			auto amountSecretCoinsCollected = GameStatsManager::sharedState()->getCollectedCoinsForLevel(level);
 
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
