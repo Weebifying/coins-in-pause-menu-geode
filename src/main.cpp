@@ -1,36 +1,34 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 
-#include <algorithm>
-
 using namespace geode::prelude;
+
+int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 
 class $modify(PauseLayer) {
 	TodoReturn customSetup() {
 		PauseLayer::customSetup();
-		log::info("step 1");
+
 		auto winSize = CCDirector::get()->getWinSize();
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
-		int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
-		log::info("step 2");
+
 		auto levelIDInt =  level->m_levelID.value();
 		auto levelID = std::to_string(levelIDInt);
 		auto levelIDKey = std::string(level->getCoinKey(levelIDInt));
 		auto areCoinsVerified = level->m_coinsVerified.value();
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
-		log::info("step 3");
+		
 		
 		// log::info("coins: {}", level->m_coins);
 		// log::info("id: {}", levelID);
-		// log::info("id key: {}", levelIDKey);
+		// log::info("id key: {}", levelIDKey);;
 		// log::info("suffix: {}", weeklySuffix);
 		// log::info("aaaaaa: {}", GameStatsManager::sharedState()->getCollectedCoinsForLevel(level)); 
 
 		// check if level is a main level
 		// NOT accurate since level id 2004 still exists on the server but idgaf :D
-		// if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
-		if (false) {
+		if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
 			auto amountSecretCoinsCollected = GameStatsManager::sharedState()->getCollectedCoinsForLevel(level);
 
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
@@ -62,7 +60,6 @@ class $modify(PauseLayer) {
 			// bronze coin: pending
 			auto verifiedCoins = GameStatsManager::sharedState()->m_verifiedUserCoins;
 			auto pendingCoins = GameStatsManager::sharedState()->m_pendingUserCoins;
-			log::info("step 4");
 
 			// IDK LOL 
 			auto coin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
@@ -94,13 +91,12 @@ class $modify(PauseLayer) {
 			coin3->setScale(0.6);
 			coin3->setPosition({winSize.width/2 + coin1Slot->getContentSize().width*(2.f - level->m_coins/2.5f), winSize.height/11.5f});
 			coin3->setZOrder(9);
-			log::info("step 5");
 
 			// self explanatory
 			if (level->m_coins >= 1) this->addChild(coin1Slot);
 			if (level->m_coins >= 2) this->addChild(coin2Slot);
 			if (level->m_coins >= 3) this->addChild(coin3Slot);
-			log::info("step 6");
+
 			// silver coin in levels on the server
 			if (areCoinsVerified) {
 				if (verifiedCoins->objectForKey(levelID + "_1" + weeklySuffix)) this->addChild(coin1);
@@ -125,10 +121,6 @@ class $modify(PauseLayer) {
 				coin2->setColor({255, 175, 75});
 				coin3->setColor({255, 175, 75});
 			}
-			log::info("step 7");
 		}
-		
-		free(mainLevels);
-		log::info("step 8");
 	}
 };
