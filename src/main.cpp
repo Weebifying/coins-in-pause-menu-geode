@@ -4,7 +4,6 @@
 using namespace geode::prelude;
 
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
-bool thing = false;
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
@@ -12,13 +11,14 @@ class $modify(PauseLayer) {
     }
 
 	static PauseLayer* create(bool p0) {
-		auto balls = PauseLayer::create(p0);
-		auto menu = balls->getChildByID("bottom-button-menu");
+		auto pl = PauseLayer::create(p0);
+		auto menu = pl->getChildByID("bottom-button-menu");
 
-		if (balls->getChildByID("better-pause-node")) {
+		if (pl->getChildByID("better-pause-node")) {
 			menu->setVisible(true);
 			menu->setAnchorPoint({0.5f, 0});
 			// idk either i just bruteforced a solution
+			// cuz setting a layout with allow cross axis overflow fucks up the content size
 			auto layout = ColumnLayout::create()
 					->setGap(10.f)
 					->setAutoScale(false)
@@ -40,7 +40,7 @@ class $modify(PauseLayer) {
 			);
 		}
 
-		return balls;
+		return pl;
 	}
 
 	TodoReturn customSetup() {
@@ -57,37 +57,13 @@ class $modify(PauseLayer) {
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 		
 		auto menu = this->getChildByID("bottom-button-menu");
-		// if (thing) {
-		// 	menu->setVisible(true);
-		// 	menu->setAnchorPoint({0.5f, 0});
-		// 	auto menuSize = menu->getContentSize();
-		// 	menu->setContentSize({26.1f, 400.f});
-		// 	menu->setLayout(
-		// 		ColumnLayout::create()
-		// 			->setGap(10.f)
-		// 			->setAutoScale(false)
-		// 			->setAxisAlignment(AxisAlignment::Start)
-		// 			->setCrossAxisAlignment(AxisAlignment::Center)
-		// 			->setCrossAxisLineAlignment(AxisAlignment::Center)
-		// 	);
-		// 	menu->updateLayout();
-		// } else
-		// 	menu->setLayout(
-		// 		RowLayout::create()
-		// 			->setGap(10.f)
-		// 			->setAutoScale(false)
-		// 			->setAxisAlignment(AxisAlignment::Center)
-		// 			->setCrossAxisAlignment(AxisAlignment::Center)
-		// 			->setCrossAxisLineAlignment(AxisAlignment::Center)
-		// 	);
-
 		
 		// check if level is a main level
 		// NOT accurate since level id 2004 still exists on the server but idgaf :D
 		if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
 			auto amountSecretCoinsCollected = GameStatsManager::sharedState()->getCollectedCoinsForLevel(level);
 
-			// later
+			// i will make secret coins work properly later
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
 			secretCoin1Slot->setScale(0.6);
 			auto secretCoin2Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
@@ -116,7 +92,7 @@ class $modify(PauseLayer) {
 			auto verifiedCoins = GameStatsManager::sharedState()->m_verifiedUserCoins;
 			auto pendingCoins = GameStatsManager::sharedState()->m_pendingUserCoins;
 
-			// IDK LOL 
+			// coin sprites
 			auto coin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
 			coin1Slot->setScale(0.6);
 
