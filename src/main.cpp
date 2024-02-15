@@ -56,6 +56,9 @@ class $modify(PauseLayer) {
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 		
+		log::info("coins: {}", level->m_coins);
+		log::info("weekly: '{}'", weeklySuffix);
+
 		auto menu = this->getChildByID("bottom-button-menu");
 		
 		// check if level is a main level
@@ -142,10 +145,10 @@ class $modify(PauseLayer) {
 					else menu->addChild(coin1Slot);
 				if (level->m_coins >= 2)
 					if (pendingCoins->objectForKey(levelID + "_2" + weeklySuffix)) menu->addChild(coin2);
-					else menu->addChild(coin1Slot);
+					else menu->addChild(coin2Slot);
 				if (level->m_coins >= 3)
 					if (pendingCoins->objectForKey(levelID + "_3" + weeklySuffix)) menu->addChild(coin3);
-					else menu->addChild(coin1Slot);
+					else menu->addChild(coin3Slot);
 
 				coin1Slot->setColor({255, 175, 75});
 				coin2Slot->setColor({255, 175, 75});
