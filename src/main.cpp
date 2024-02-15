@@ -7,7 +7,7 @@ int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
-        self.setHookPriority("GJGarageLayer::init", -100);
+        self.setHookPriority("PauseLayer::create", -100);
     }
 
 	static PauseLayer* create(bool p0) {
