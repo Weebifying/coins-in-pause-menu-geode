@@ -13,9 +13,32 @@ class $modify(PauseLayer) {
 
 	static PauseLayer* create(bool p0) {
 		auto balls = PauseLayer::create(p0);
+		auto menu = balls->getChildByID("bottom-button-menu");
 
-		balls->getChildByID("bottom-button-menu")->setVisible(true);
-		if (balls->getChildByID("better-pause-node")) thing = true;
+		if (balls->getChildByID("better-pause-node")) {
+			menu->setVisible(true);
+			menu->setAnchorPoint({0.5f, 0});
+			// idk either i just bruteforced a solution
+			auto layout = ColumnLayout::create()
+					->setGap(10.f)
+					->setAutoScale(false)
+					->setAxisAlignment(AxisAlignment::Start)
+					->setCrossAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisLineAlignment(AxisAlignment::Center)
+					->setCrossAxisOverflow(false);
+			menu->setLayout(layout);
+			menu->setContentSize({menu->getContentSize().height, menu->getContentSize().width});
+			menu->setLayout(layout->setCrossAxisOverflow(true));
+		} else {
+			menu->setLayout(
+				RowLayout::create()
+					->setGap(10.f)
+					->setAutoScale(false)
+					->setAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisLineAlignment(AxisAlignment::Center)
+			);
+		}
 
 		return balls;
 	}
@@ -34,31 +57,29 @@ class $modify(PauseLayer) {
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 		
 		auto menu = this->getChildByID("bottom-button-menu");
-		// if (this->getChildByID("better-pause-node")) {
-		if (thing) {
-			menu->setVisible(true);
-			menu->setAnchorPoint({0.5f, 0});
-			auto menuSize = menu->getContentSize();
-			menu->setLayout(
-				ColumnLayout::create()
-					->setGap(10.f)
-					->setAutoScale(false)
-					->setAxisAlignment(AxisAlignment::Start)
-					->setCrossAxisAlignment(AxisAlignment::Center)
-					->setCrossAxisLineAlignment(AxisAlignment::Center)
-					->setCrossAxisOverflow(false)
-			);
-			menu->setContentSize(menuSize);
-		} else
-			menu->setLayout(
-				RowLayout::create()
-					->setGap(10.f)
-					->setAutoScale(false)
-					->setAxisAlignment(AxisAlignment::Center)
-					->setCrossAxisAlignment(AxisAlignment::Center)
-					->setCrossAxisLineAlignment(AxisAlignment::Center)
-					->setCrossAxisOverflow(false)
-			);
+		// if (thing) {
+		// 	menu->setVisible(true);
+		// 	menu->setAnchorPoint({0.5f, 0});
+		// 	auto menuSize = menu->getContentSize();
+		// 	menu->setContentSize({26.1f, 400.f});
+		// 	menu->setLayout(
+		// 		ColumnLayout::create()
+		// 			->setGap(10.f)
+		// 			->setAutoScale(false)
+		// 			->setAxisAlignment(AxisAlignment::Start)
+		// 			->setCrossAxisAlignment(AxisAlignment::Center)
+		// 			->setCrossAxisLineAlignment(AxisAlignment::Center)
+		// 	);
+		// 	menu->updateLayout();
+		// } else
+		// 	menu->setLayout(
+		// 		RowLayout::create()
+		// 			->setGap(10.f)
+		// 			->setAutoScale(false)
+		// 			->setAxisAlignment(AxisAlignment::Center)
+		// 			->setCrossAxisAlignment(AxisAlignment::Center)
+		// 			->setCrossAxisLineAlignment(AxisAlignment::Center)
+		// 	);
 
 		
 		// check if level is a main level
