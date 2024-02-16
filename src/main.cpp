@@ -55,10 +55,7 @@ class $modify(PauseLayer) {
 		auto areCoinsVerified = level->m_coinsVerified.value();
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
-		
-		log::info("coins: {}", level->m_coins);
-		log::info("weekly: '{}'", weeklySuffix);
-
+	
 		auto menu = this->getChildByID("bottom-button-menu");
 		
 		// check if level is a main level
