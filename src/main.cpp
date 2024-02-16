@@ -12,7 +12,7 @@ class $modify(PauseLayer) {
 
 	static PauseLayer* create(bool p0) {
 		auto pl = PauseLayer::create(p0);
-		auto menu = pl->getChildByID("bottom-button-menu");
+		auto menu = pl->getChildByID("coins-menu");
 
 		if (pl->getChildByID("better-pause-node")) {
 			menu->setVisible(true);
@@ -56,7 +56,14 @@ class $modify(PauseLayer) {
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 	
-		auto menu = this->getChildByID("bottom-button-menu");
+		auto bottom_menu = this->getChildByID("bottom-button-menu");
+		auto menu = CCMenu::create();
+		this->addChild(menu);
+		menu->setPosition(bottom_menu->getPosition());
+		menu->setContentSize(bottom_menu->getContentSize());
+		menu->setZOrder(bottom_menu->getZOrder());
+		menu->setID("coins-menu");
+
 		
 		// check if level is a main level
 		// NOT accurate since level id 2004 still exists on the server but idgaf :D
