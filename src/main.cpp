@@ -3,7 +3,6 @@
 
 using namespace geode::prelude;
 
-int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
@@ -63,12 +62,12 @@ class $modify(PauseLayer) {
 		menu->setContentSize(bottom_menu->getContentSize());
 		menu->setZOrder(bottom_menu->getZOrder());
 		menu->setID("coins-menu");
-
 		
 		// check if level is a main level
-		// NOT accurate since level id 2004 still exists on the server but idgaf :D
-		if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
+		if (level->m_levelType == GJLevelType::Local) {
 			auto amountSecretCoinsCollected = GameStatsManager::sharedState()->getCollectedCoinsForLevel(level);
+
+			// log::info("{}", level->m_levelString);
 
 			// i will make secret coins work properly later
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
@@ -164,6 +163,5 @@ class $modify(PauseLayer) {
 		}
 
 		menu->updateLayout();
-
 	}
 };
