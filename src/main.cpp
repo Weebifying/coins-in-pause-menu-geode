@@ -3,7 +3,6 @@
 
 using namespace geode::prelude;
 
-int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
@@ -57,20 +56,18 @@ class $modify(PauseLayer) {
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 	
 		auto menu = this->getChildByID("bottom-button-menu");
-		
-		// check if level is a main level
-		// NOT accurate since level id 2004 still exists on the server but idgaf :D
-		if (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0])) {
-			auto amountSecretCoinsCollected = GameStatsManager::sharedState()->getCollectedCoinsForLevel(level);
 
-			// i will make secret coins work properly later
+		// check if level is an official level
+		if (level->m_levelType == GJLevelType::Local) {
+
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
 			secretCoin1Slot->setScale(0.6);
+
 			auto secretCoin2Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
 			secretCoin2Slot->setScale(0.6);
+
 			auto secretCoin3Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
 			secretCoin3Slot->setScale(0.6);
-
 
 			auto secretCoin1 = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
 			secretCoin1->setScale(0.6);
@@ -81,9 +78,15 @@ class $modify(PauseLayer) {
 			auto secretCoin3 = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
 			secretCoin3->setScale(0.6);
 
-			if (amountSecretCoinsCollected >= 1) menu->addChild(secretCoin1);
-			if (amountSecretCoinsCollected >= 2) menu->addChild(secretCoin2);
-			if (amountSecretCoinsCollected >= 3) menu->addChild(secretCoin3);
+			if (level->m_coins >= 1) 
+				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_1").c_str())) menu->addChild(secretCoin1);
+				else menu->addChild(secretCoin1Slot);
+			if (level->m_coins >= 2) 
+				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_2").c_str())) menu->addChild(secretCoin2);
+				else menu->addChild(secretCoin2Slot);
+			if (level->m_coins >= 3) 
+				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_3").c_str())) menu->addChild(secretCoin3);
+				else menu->addChild(secretCoin3Slot);
 
 
 		} else {
@@ -125,7 +128,7 @@ class $modify(PauseLayer) {
 					else menu->addChild(coin3Slot);
 			// silver coin in user created levels that havent been uploaded
 			// hence the level id 0
-			} else if (levelIDInt == 0 || level->m_levelType == GJLevelType::Editor) {
+			} else if (levelIDInt == 0) {
 				if (level->m_coins >= 1)
 					if (level->m_firstCoinVerified.value()) menu->addChild(coin1);
 					else menu->addChild(coin1Slot);
