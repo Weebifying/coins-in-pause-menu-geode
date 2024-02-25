@@ -3,6 +3,7 @@
 
 using namespace geode::prelude;
 
+int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
@@ -58,7 +59,7 @@ class $modify(PauseLayer) {
 		auto menu = this->getChildByID("bottom-button-menu");
 
 		// check if level is an official level
-		if (level->m_levelType == GJLevelType::Local) {
+		if (level->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]))) {
 
 			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
 			secretCoin1Slot->setScale(0.6);
