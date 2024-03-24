@@ -6,7 +6,7 @@
 using namespace geode::prelude;
 
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
-int index = 0;
+int coIndex = 0;
 bool collected[3] = {false};
 
 class $modify(CoinGameObject, EffectGameObject) {
@@ -20,14 +20,14 @@ class $modify(CoinGameObject, EffectGameObject) {
 		// secretCoin_2_01_001
 		m_fields->m_sprite = p0;
 		if (std::string(p0).starts_with("secretCoin_")) {
-			m_fields->m_index = index;
-			index++;
+			m_fields->m_index = coIndex;
+			coIndex++;
 		}
 
 		return true;
 	}
 
-	void triggerObject(GJBaseGameLayer* p0, int p1, std::vector<int> const* p2) {
+	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		EffectGameObject::triggerObject(p0, p1, p2);
 		if (std::string(m_fields->m_sprite).starts_with("secretCoin_"))
 			collected[m_fields->m_index] = true;
@@ -37,7 +37,7 @@ class $modify(CoinGameObject, EffectGameObject) {
 
 class $modify(PlayLayer) {
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-		index = 0;
+		coIndex = 0;
 		for (int i = 0; i < 3; i++) collected[i] = false;
 
 		return PlayLayer::init(level, useReplay, dontCreateObjects);
