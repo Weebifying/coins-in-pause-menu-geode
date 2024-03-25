@@ -9,27 +9,27 @@ int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
 int coIndex = 0;
 bool collected[3] = {false};
 
-class $modify(CoinGameObject, EffectGameObject) {
-	char const* m_sprite = nullptr;
+class $modify(MyCoinObject, EffectGameObject) {
+	bool m_isCoin = false;
 	int m_index = 0;
 
-	bool init(char const* p0) {
-		if (!EffectGameObject::init(p0)) return false;
+	static EffectGameObject* create(char const* p0) {
+		auto object = EffectGameObject::create(p0);
 
 		// secretCoin_01_001
 		// secretCoin_2_01_001
-		m_fields->m_sprite = p0;
 		if (std::string(p0).starts_with("secretCoin_")) {
-			m_fields->m_index = coIndex;
+			as<MyCoinObject*>(object)->m_fields->m_isCoin = true;
+			as<MyCoinObject*>(object)->m_fields->m_index = coIndex;
 			coIndex++;
 		}
 
-		return true;
+		return object;
 	}
 
 	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		EffectGameObject::triggerObject(p0, p1, p2);
-		if (std::string(m_fields->m_sprite).starts_with("secretCoin_"))
+		if (m_fields->m_isCoin)
 			collected[m_fields->m_index] = true;
 	}
 };
