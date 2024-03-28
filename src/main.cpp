@@ -75,7 +75,29 @@ class $modify(PauseLayer) {
 			menu->setLayout(layout);
 			menu->setContentSize({menu->getContentSize().height, menu->getContentSize().width});
 			menu->setLayout(layout->setCrossAxisOverflow(true));
+		} else if (pl->getChildByID("classic-pause-node")) {
+			menu->setVisible(false);
+			auto altMenu = CCMenu::create();
+			altMenu->setAnchorPoint({0.5f, 0});
+			auto layout = ColumnLayout::create()
+					->setGap(5.f)
+					->setAutoScale(false)
+					->setAxisAlignment(AxisAlignment::Start)
+					->setCrossAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisLineAlignment(AxisAlignment::Center)
+					->setCrossAxisOverflow(true);
+			altMenu->setLayout(layout);
+			altMenu->setContentSize({30.f, 100.f});
+
+			CCArrayExt<CCNode*> children = menu->getChildren();
+			for (auto* child : children)
+				altMenu->addChild(child);
+			
+			pl->getChildByID("left-button-menu")->addChild(altMenu);
+			altMenu->updateLayout();
+			pl->getChildByID("left-button-menu")->updateLayout();
 		} else {
+			menu->setVisible(true);
 			menu->setLayout(
 				RowLayout::create()
 					->setGap(10.f)
@@ -102,7 +124,7 @@ class $modify(PauseLayer) {
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 	
-		auto menu = this->getChildByID("bottom-button-menu");
+		auto menu = this->getChildByIDRecursive("bottom-button-menu");
 		auto fadeAction1 = CCArray::create();
 		fadeAction1->addObject(CCFadeOut::create(1.f));
 		fadeAction1->addObject(CCFadeIn::create(1.f));
