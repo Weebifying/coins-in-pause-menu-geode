@@ -27,10 +27,12 @@ class $modify(MyCoinObject, EffectGameObject) {
 		return object;
 	}
 
-	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		EffectGameObject::triggerObject(p0, p1, p2);
-		if (m_fields->m_isCoin)
+	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+		auto result = EffectGameObject::triggerObject(p0, p1, p2);
+		if (m_fields->m_isCoin) {
 			collected[m_fields->m_index] = true;
+		}
+		return result;
 	}
 };
 
