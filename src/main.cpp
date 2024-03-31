@@ -27,6 +27,7 @@ class $modify(MyCoinObject, EffectGameObject) {
 		return object;
 	}
 
+	#ifndef GEODE_IS_ANDROID
 	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		auto result = EffectGameObject::triggerObject(p0, p1, p2);
 		if (m_fields->m_isCoin) {
@@ -34,6 +35,7 @@ class $modify(MyCoinObject, EffectGameObject) {
 		}
 		return result;
 	}
+	#endif
 };
 
 
@@ -53,12 +55,15 @@ class $modify(PlayLayer) {
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
-        self.setHookPriority("PauseLayer::create", -100);
+        self.setHookPriority("PauseLayer::create", -101); // cuz another fucking mod uses -100
     }
 
 	static PauseLayer* create(bool p0) {
 		auto pl = PauseLayer::create(p0);
 		auto menu = pl->getChildByID("bottom-button-menu");
+
+		auto winSize = CCDirector::get()->getWinSize();
+		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
 
 		if (pl->getChildByID("better-pause-node")) {
 			menu->setVisible(true);
@@ -76,9 +81,8 @@ class $modify(PauseLayer) {
 			menu->setContentSize({menu->getContentSize().height, menu->getContentSize().width});
 			menu->setLayout(layout->setCrossAxisOverflow(true));
 		} else if (pl->getChildByID("classic-pause-node")) {
-			menu->setVisible(false);
-			auto altMenu = CCMenu::create();
-			altMenu->setAnchorPoint({0.5f, 0});
+			menu = CCMenu::create();
+			menu->setAnchorPoint({0.5f, 0});
 			auto layout = ColumnLayout::create()
 					->setGap(5.f)
 					->setAutoScale(false)
@@ -86,15 +90,11 @@ class $modify(PauseLayer) {
 					->setCrossAxisAlignment(AxisAlignment::Center)
 					->setCrossAxisLineAlignment(AxisAlignment::Center)
 					->setCrossAxisOverflow(true);
-			altMenu->setLayout(layout);
-			altMenu->setContentSize({30.f, 100.f});
-
-			CCArrayExt<CCNode*> children = menu->getChildren();
-			for (auto* child : children)
-				altMenu->addChild(child);
+			menu->setLayout(layout);
+			menu->setContentSize({30.f, 100.f});
 			
-			pl->getChildByID("left-button-menu")->addChild(altMenu);
-			altMenu->updateLayout();
+			pl->getChildByID("left-button-menu")->addChild(menu);
+			menu->updateLayout();
 			pl->getChildByID("left-button-menu")->updateLayout();
 		} else {
 			menu->setVisible(true);
@@ -108,15 +108,6 @@ class $modify(PauseLayer) {
 			);
 		}
 
-		return pl;
-	}
-
-	void customSetup() {
-		PauseLayer::customSetup();
-
-		auto winSize = CCDirector::get()->getWinSize();
-		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
-
 		auto levelIDInt =  level->m_levelID.value();
 		auto levelID = std::to_string(levelIDInt);
 		auto levelIDKey = std::string(level->getCoinKey(levelIDInt));
@@ -124,7 +115,6 @@ class $modify(PauseLayer) {
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 	
-		auto menu = this->getChildByIDRecursive("bottom-button-menu");
 		auto fadeAction1 = CCArray::create();
 		fadeAction1->addObject(CCFadeOut::create(1.f));
 		fadeAction1->addObject(CCFadeIn::create(1.f));
@@ -352,5 +342,25 @@ class $modify(PauseLayer) {
 
 		menu->updateLayout();
 
+		return pl;
 	}
 };
+
+#ifdef GEODE_IS_ANDROID
+bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+	auto result = self->triggerObject(p0, p1, p2);
+	if (self->m_fields->m_isCoin) {
+		collected[self->m_fields->m_index] = true;
+	}
+	return result;
+}
+
+$execute {
+    Mod::get()->hook(
+        reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN16EffectGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"))),
+        &EffectGameObject_triggerObject,
+        "EffectGameObject::triggerObject",
+        tulip::hook::TulipConvention::Default
+    );
+}
+#endif
