@@ -342,6 +342,44 @@ class $modify(PauseLayer) {
 
 		menu->updateLayout();
 
+		// hidden feature :D
+		// cleanup right-button-menu and left-button-menu cuz theres too many buttons there now man
+		// and i dont really think its necessary to make a separate mod for just this
+		// this mod is pretty popular anyway
+		auto rLayout = ColumnLayout::create()
+					->setGap(5.f)
+					->setAxisReverse(true)
+					->setGrowCrossAxis(true)
+					->setCrossAxisOverflow(true)
+					->setAxisAlignment(AxisAlignment::End)
+					->setCrossAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisLineAlignment(AxisAlignment::Center);
+		auto lLayout = ColumnLayout::create()
+					->setGap(4.f)
+					->setCrossAxisReverse(true)
+					->setGrowCrossAxis(true)
+					->setCrossAxisOverflow(true)
+					->setAxisAlignment(AxisAlignment::Start)
+					->setCrossAxisAlignment(AxisAlignment::Center)
+					->setCrossAxisLineAlignment(AxisAlignment::Center);
+
+
+		auto rMenu = pl->getChildByID("right-button-menu");
+		rMenu->setAnchorPoint({1, 1});
+		rMenu->setPositionX(rMenu->getPositionX() + rMenu->getContentWidth()/2);
+		rMenu->setPositionY(rMenu->getPositionY() + rMenu->getContentHeight()/2);
+		if (pl->getChildByID("dankmeme.globed2/playerlist-menu")) {
+			rMenu->setContentHeight(rMenu->getContentHeight() - 55.f);
+		}
+		rMenu->setLayout(rLayout);
+		rMenu->updateLayout();
+
+		auto lMenu = pl->getChildByID("left-button-menu");
+		lMenu->setAnchorPoint({0, 0.5});
+		lMenu->setPositionX(lMenu->getPositionX() - lMenu->getContentWidth()/2);
+		lMenu->setLayout(lLayout);
+		lMenu->updateLayout();
+
 		return pl;
 	}
 };
@@ -357,7 +395,7 @@ bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int
 
 $execute {
     Mod::get()->hook(
-        reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN16EffectGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"))),
+        dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN16EffectGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"),
         &EffectGameObject_triggerObject,
         "EffectGameObject::triggerObject",
         tulip::hook::TulipConvention::Default
