@@ -1,4 +1,6 @@
 # Coins in Pause Menu Changelog
+## v1.1.1
+- Fixes BetterPause thing woops mb
 ## v1.1.0
 - MacOS support
 - Coin(s) collected in the current attempt are now shown ([#3](https://github.com/Weebifying/coins-in-pause-menu-geode/issues/3))
