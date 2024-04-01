@@ -2,12 +2,14 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/EffectGameObject.hpp>
+#include <Geode/modify/CheckpointGameObject.hpp>
 
 using namespace geode::prelude;
 
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
 int coIndex = 0;
 bool collected[3] = {false};
+bool savedCollected[3]	= {false};
 
 class $modify(MyCoinObject, EffectGameObject) {
 	bool m_isCoin = false;
@@ -29,27 +31,61 @@ class $modify(MyCoinObject, EffectGameObject) {
 
 	#ifndef GEODE_IS_ANDROID
 	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		auto result = EffectGameObject::triggerObject(p0, p1, p2);
+		if (!EffectGameObject::triggerObject(p0, p1, p2)) return false;
 		if (m_fields->m_isCoin) {
 			collected[m_fields->m_index] = true;
+			if (!p0->m_level->isPlatformer()) {
+				savedCollected[m_fields->m_index] = true;
+			}
 		}
-		return result;
+		return true;
 	}
 	#endif
 };
+
+#ifndef GEODE_IS_ANDROID
+class $modify(CheckpointGameObject) {
+	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+		if (!CheckpointGameObject::triggerObject(p0, p1, p2)) return false;
+
+		if (p0->m_level->isPlatformer()) {
+			for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
+		}
+
+		return true;
+	}
+};
+#endif
 
 
 class $modify(PlayLayer) {
 	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
 		coIndex = 0;
-		for (int i = 0; i < 3; i++) collected[i] = false;
-
+		for (int i = 0; i < 3; i++) {
+			savedCollected[i] = false;
+			collected[i] = false;
+		}
 		return PlayLayer::init(level, useReplay, dontCreateObjects);
 	}
 
 	void resetLevel() {
 		PlayLayer::resetLevel();
-		for (int i = 0; i < 3; i++) collected[i] = false;
+
+		if (!this->m_level->isPlatformer())
+			for (int i = 0; i < 3; i++) savedCollected[i] = false;
+
+		for (int i = 0; i < 3; i++) collected[i] = savedCollected[i];
+
+	}
+
+	void resetLevelFromStart() {
+		PlayLayer::resetLevelFromStart();
+		
+		for (int i = 0; i < 3; i++) {
+			savedCollected[i] = false;
+			collected[i] = false;
+		}
+	
 	}
 };
 
@@ -388,18 +424,40 @@ class $modify(PauseLayer) {
 
 #ifdef GEODE_IS_ANDROID
 bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-	auto result = self->triggerObject(p0, p1, p2);
-	if (self->m_fields->m_isCoin) {
-		collected[self->m_fields->m_index] = true;
+		if (!self->triggerObject(p0, p1, p2)) return false;
+
+		if (self->m_fields->m_isCoin) {
+			collected[self->m_fields->m_index] = true;
+			if (!p0->m_level->isPlatformer()) {
+				savedCollected[self->m_fields->m_index] = true;
+			}
+		}
+		
+		return true;
 	}
-	return result;
+
+bool CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+	if (!self->triggerObject(p0, p1, p2)) return false;
+
+	if (p0->m_level->isPlatformer()) {
+		for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
+	}
+
+	return true;
 }
+
 
 $execute {
     Mod::get()->hook(
         dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN16EffectGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"),
         &EffectGameObject_triggerObject,
         "EffectGameObject::triggerObject",
+        tulip::hook::TulipConvention::Default
+    );
+	Mod::get()->hook(
+        dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN20CheckpointGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"),
+        &CheckpointGameObject_triggerObject,
+        "CheckpointGameObject::triggerObject",
         tulip::hook::TulipConvention::Default
     );
 }
