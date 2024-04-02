@@ -18,8 +18,8 @@ class $modify(MyCoinObject, EffectGameObject) {
 	static EffectGameObject* create(char const* p0) {
 		auto object = EffectGameObject::create(p0);
 
-		// secretCoin_01_001
-		// secretCoin_2_01_001
+		// secretCoin_01_001 for secret coins
+		// secretCoin_2_01_001 for user coins
 		if (std::string(p0).starts_with("secretCoin_")) {
 			as<MyCoinObject*>(object)->m_fields->m_isCoin = true;
 			as<MyCoinObject*>(object)->m_fields->m_index = coIndex;
@@ -30,23 +30,22 @@ class $modify(MyCoinObject, EffectGameObject) {
 	}
 
 	#ifndef GEODE_IS_ANDROID
-	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		if (!EffectGameObject::triggerObject(p0, p1, p2)) return false;
+	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+		EffectGameObject::triggerObject(p0, p1, p2);
 		if (m_fields->m_isCoin) {
 			collected[m_fields->m_index] = true;
 			if (!p0->m_level->isPlatformer()) {
 				savedCollected[m_fields->m_index] = true;
 			}
 		}
-		return true;
 	}
 	#endif
 };
 
 #ifndef GEODE_IS_ANDROID
 class $modify(CheckpointGameObject) {
-	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		auto result = CheckpointGameObject::triggerObject(p0, p1, p2);
+	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+		CheckpointGameObject::triggerObject(p0, p1, p2);
 
 		log::info("CheckpointGameObject::triggerObject(p0, {}, p2)", p1);
 		log::warn("p0->m_level->isPlatformer() = {}", p0->m_level->isPlatformer());
@@ -58,8 +57,6 @@ class $modify(CheckpointGameObject) {
 
 		log::error("collected: {}, {}, {}", collected[0], collected[1], collected[2]);
 		log::error("savedCollected: {}, {}, {}", savedCollected[0], savedCollected[1], savedCollected[2]);
-
-		return result;
 	}
 };
 #endif
@@ -85,14 +82,39 @@ class $modify(PlayLayer) {
 
 	}
 
-	void resetLevelFromStart() {
-		PlayLayer::resetLevelFromStart();
+	void fullReset() {
+		PlayLayer::fullReset();
 		
 		for (int i = 0; i < 3; i++) {
 			savedCollected[i] = false;
 			collected[i] = false;
 		}
-	
+	}
+
+	void resumeAndRestart(bool fullReset) {
+		PlayLayer::resumeAndRestart(fullReset);
+
+		log::info("fullReset = {}", fullReset);
+		log::error("collected: {}, {}, {}", collected[0], collected[1], collected[2]);
+		log::error("savedCollected: {}, {}, {}", savedCollected[0], savedCollected[1], savedCollected[2]);
+
+		if (fullReset) {
+			for (int i = 0; i < 3; i++) {
+				savedCollected[i] = false;
+				collected[i] = false;
+			}
+		}
+	}
+
+	void togglePracticeMode(bool isPractice) {
+		PlayLayer::togglePracticeMode(isPractice);
+
+		if (!isPractice) {
+			for (int i = 0; i < 3; i++) {
+				savedCollected[i] = false;
+				collected[i] = false;
+			}
+		}
 	}
 };
 
@@ -431,7 +453,7 @@ class $modify(PauseLayer) {
 
 #ifdef GEODE_IS_ANDROID
 bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		if (!self->triggerObject(p0, p1, p2)) return false;
+		self->triggerObject(p0, p1, p2);
 
 		if (self->m_fields->m_isCoin) {
 			collected[self->m_fields->m_index] = true;
@@ -439,18 +461,14 @@ bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int
 				savedCollected[self->m_fields->m_index] = true;
 			}
 		}
-		
-		return true;
 	}
 
 bool CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-	auto result = self->triggerObject(p0, p1, p2);
+	self->triggerObject(p0, p1, p2);
 
 	if (p0->m_level->isPlatformer()) {
 		for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
 	}
-
-	return result;
 }
 
 
