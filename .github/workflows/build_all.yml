@@ -38,6 +38,7 @@ jobs:
           # sdk: 'nightly'
           combine: true
           target: ${{ matrix.config.target }}
+          bindings: 'weebifying/bindings'
 
   package:
     name: Package builds
