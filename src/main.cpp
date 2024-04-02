@@ -47,16 +47,9 @@ class $modify(CheckpointGameObject) {
 	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		CheckpointGameObject::triggerObject(p0, p1, p2);
 
-		log::info("CheckpointGameObject::triggerObject(p0, {}, p2)", p1);
-		log::warn("p0->m_level->isPlatformer() = {}", p0->m_level->isPlatformer());
-		log::warn("p0->m_level->m_levelLength = {}", p0->m_level->m_levelLength);
-
 		if (p0->m_level->isPlatformer()) {
 			for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
 		}
-
-		log::error("collected: {}, {}, {}", collected[0], collected[1], collected[2]);
-		log::error("savedCollected: {}, {}, {}", savedCollected[0], savedCollected[1], savedCollected[2]);
 	}
 };
 #endif
@@ -93,10 +86,6 @@ class $modify(PlayLayer) {
 
 	void resumeAndRestart(bool fullReset) {
 		PlayLayer::resumeAndRestart(fullReset);
-
-		log::info("fullReset = {}", fullReset);
-		log::error("collected: {}, {}, {}", collected[0], collected[1], collected[2]);
-		log::error("savedCollected: {}, {}, {}", savedCollected[0], savedCollected[1], savedCollected[2]);
 
 		if (fullReset) {
 			for (int i = 0; i < 3; i++) {
@@ -452,7 +441,7 @@ class $modify(PauseLayer) {
 };
 
 #ifdef GEODE_IS_ANDROID
-bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+void EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		self->triggerObject(p0, p1, p2);
 
 		if (self->m_fields->m_isCoin) {
@@ -463,7 +452,7 @@ bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int
 		}
 	}
 
-bool CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
+void CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 	self->triggerObject(p0, p1, p2);
 
 	if (p0->m_level->isPlatformer()) {
