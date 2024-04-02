@@ -46,7 +46,7 @@ class $modify(MyCoinObject, EffectGameObject) {
 #ifndef GEODE_IS_ANDROID
 class $modify(CheckpointGameObject) {
 	bool triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		if (!CheckpointGameObject::triggerObject(p0, p1, p2)) return false;
+		auto result = CheckpointGameObject::triggerObject(p0, p1, p2);
 
 		log::info("CheckpointGameObject::triggerObject(p0, {}, p2)", p1);
 		log::warn("p0->m_level->isPlatformer() = {}", p0->m_level->isPlatformer());
@@ -59,7 +59,7 @@ class $modify(CheckpointGameObject) {
 		log::error("collected: {}, {}, {}", collected[0], collected[1], collected[2]);
 		log::error("savedCollected: {}, {}, {}", savedCollected[0], savedCollected[1], savedCollected[2]);
 
-		return true;
+		return result;
 	}
 };
 #endif
@@ -444,13 +444,13 @@ bool EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int
 	}
 
 bool CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-	if (!self->triggerObject(p0, p1, p2)) return false;
+	auto result = self->triggerObject(p0, p1, p2);
 
 	if (p0->m_level->isPlatformer()) {
 		for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
 	}
 
-	return true;
+	return result;
 }
 
 
