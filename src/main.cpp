@@ -120,20 +120,7 @@ class $modify(PauseLayer) {
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
 
 		if (pl->getChildByID("better-pause-node")) {
-			menu->setVisible(true);
-			menu->setAnchorPoint({0.5f, 0});
-			// idk either i just bruteforced a solution
-			// cuz setting a layout with allow cross axis overflow fucks up the content size
-			auto layout = ColumnLayout::create()
-					->setGap(10.f)
-					->setAutoScale(false)
-					->setAxisAlignment(AxisAlignment::Start)
-					->setCrossAxisAlignment(AxisAlignment::Center)
-					->setCrossAxisLineAlignment(AxisAlignment::Center)
-					->setCrossAxisOverflow(false);
-			menu->setLayout(layout);
-			menu->setContentSize({menu->getContentSize().height, menu->getContentSize().width});
-			menu->setLayout(layout->setCrossAxisOverflow(true));
+			menu->setVisible(false);
 		} else if (pl->getChildByID("classic-pause-node")) {
 			menu = CCMenu::create();
 			menu->setAnchorPoint({0.5f, 0});
