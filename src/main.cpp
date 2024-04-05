@@ -18,8 +18,8 @@ class $modify(MyCoinObject, EffectGameObject) {
 	static EffectGameObject* create(char const* p0) {
 		auto object = EffectGameObject::create(p0);
 
-		// secretCoin_01_001 for secret coins
-		// secretCoin_2_01_001 for user coins
+		// secretCoin_01_001.png
+		// secretCoin_2_01_001.png
 		if (std::string(p0).starts_with("secretCoin_")) {
 			as<MyCoinObject*>(object)->m_fields->m_isCoin = true;
 			as<MyCoinObject*>(object)->m_fields->m_index = coIndex;
@@ -124,17 +124,17 @@ class $modify(PauseLayer) {
 		} else if (pl->getChildByID("classic-pause-node")) {
 			menu = CCMenu::create();
 			menu->setAnchorPoint({0.5f, 0});
-			auto layout = ColumnLayout::create()
+			menu->setLayout(
+				ColumnLayout::create()
 					->setGap(5.f)
 					->setAutoScale(false)
 					->setAxisAlignment(AxisAlignment::Start)
 					->setCrossAxisAlignment(AxisAlignment::Center)
 					->setCrossAxisLineAlignment(AxisAlignment::Center)
-					->setCrossAxisOverflow(true);
-			menu->setLayout(layout);
+					->setCrossAxisOverflow(true));
 			menu->setContentSize({30.f, 100.f});
-			
 			pl->getChildByID("left-button-menu")->addChild(menu);
+			
 			menu->updateLayout();
 			pl->getChildByID("left-button-menu")->updateLayout();
 		} else {
@@ -155,81 +155,42 @@ class $modify(PauseLayer) {
 		auto areCoinsVerified = level->m_coinsVerified.value();
 		std::string weeklySuffix = "";
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
-	
-		auto fadeAction1 = CCArray::create();
-		fadeAction1->addObject(CCFadeOut::create(1.f));
-		fadeAction1->addObject(CCFadeIn::create(1.f));
-		auto fadeAction2 = CCArray::create();
-		fadeAction2->addObject(CCFadeOut::create(1.f));
-		fadeAction2->addObject(CCFadeIn::create(1.f));
-		auto fadeAction3 = CCArray::create();
-		fadeAction3->addObject(CCFadeOut::create(1.f));
-		fadeAction3->addObject(CCFadeIn::create(1.f));
 
 		// check if level is an official level
 		if (level->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]))) {
 
-			auto secretCoin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
-			secretCoin1Slot->setTag(1);
-			secretCoin1Slot->setScale(0.6);
+			CCArrayExt<CCSprite*> coinSlots = CCArray::create();
+			CCArrayExt<CCSprite*> coins = CCArray::create();
+			for (int i = 0; i < 3; i++) {
+				auto coinSlot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
+				coinSlot->setTag(i + 1001);
+				coinSlot->setScale(0.6);
+				coinSlots.push_back(coinSlot);
 
-			auto secretCoin2Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
-			secretCoin2Slot->setTag(2);
-			secretCoin2Slot->setScale(0.6);
-
-			auto secretCoin3Slot = CCSprite::createWithSpriteFrameName("secretCoin_b_01_001.png");
-			secretCoin3Slot->setTag(3);
-			secretCoin3Slot->setScale(0.6);
-
-			auto secretCoin1 = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
-			secretCoin1->setTag(1001);
-			secretCoin1->setScale(0.6);
-
-			auto secretCoin2 = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
-			secretCoin2->setTag(1002);
-			secretCoin2->setScale(0.6);
-
-			auto secretCoin3 = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
-			secretCoin3->setTag(1003);
-			secretCoin3->setScale(0.6);
-
-			if (level->m_coins >= 1) {
-				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_1").c_str())) menu->addChild(secretCoin1);
-				else {
-					menu->addChild(secretCoin1Slot);
-					if (collected[0]) {
-						secretCoin1Slot->addChild(secretCoin1);
-						secretCoin1->setScale(1);
-						secretCoin1->setPosition({ secretCoin1Slot->getContentWidth()/2, secretCoin1Slot->getContentHeight()/2 });
-						secretCoin1->runAction(CCRepeatForever::create(CCSequence::create(fadeAction1)));
-					}
-				}
+				auto coin = CCSprite::createWithSpriteFrameName("secretCoinUI_001.png");
+				coin->setTag(i + 1);
+				coin->setScale(0.6);
+				coins.push_back(coin);
 			}
-			if (level->m_coins >= 2) {
-				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_2").c_str())) menu->addChild(secretCoin2);
-				else {
-					menu->addChild(secretCoin2Slot);
-					if (collected[1]) {
-						secretCoin2Slot->addChild(secretCoin2);
-						secretCoin2->setScale(1);
-						secretCoin2->setPosition({ secretCoin2Slot->getContentWidth()/2, secretCoin2Slot->getContentHeight()/2 });
-						secretCoin2->runAction(CCRepeatForever::create(CCSequence::create(fadeAction2)));
+
+			for (int i = 0; i < 3; i++) {
+				if (level->m_coins > i) {
+					if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_" + std::to_string(i + 1)).c_str())) {
+						menu->addChild(coins[i]);
+					} else {
+						menu->addChild(coinSlots[i]);
+						if (collected[i]) {
+							coinSlots[i]->addChild(coins[i]);
+							coins[i]->setScale(1);
+							coins[i]->setPosition({ coinSlots[i]->getContentWidth()/2, coinSlots[i]->getContentHeight()/2 });
+							auto actions = CCArray::create();
+							actions->addObject(CCFadeOut::create(1.f));
+							actions->addObject(CCFadeIn::create(1.f));
+							coins[i]->runAction(CCRepeatForever::create(CCSequence::create(actions)));
+						}
 					}
-				}
+				} else break;
 			}
-			if (level->m_coins >= 3) {
-				if (GameStatsManager::sharedState()->hasSecretCoin((levelID + "_3").c_str())) menu->addChild(secretCoin3);
-				else {
-					menu->addChild(secretCoin3Slot);
-					if (collected[2]) {
-						secretCoin3Slot->addChild(secretCoin3);
-						secretCoin3->setScale(1);
-						secretCoin3->setPosition({ secretCoin3Slot->getContentWidth()/2, secretCoin3Slot->getContentHeight()/2 });
-						secretCoin3->runAction(CCRepeatForever::create(CCSequence::create(fadeAction3)));
-					}
-				}
-			}
-			
 
 		} else {
 			// silver coin: verified
@@ -237,147 +198,59 @@ class $modify(PauseLayer) {
 			auto verifiedCoins = GameStatsManager::sharedState()->m_verifiedUserCoins;
 			auto pendingCoins = GameStatsManager::sharedState()->m_pendingUserCoins;
 
-			// coin sprites
-			auto coin1Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
-			coin1Slot->setScale(0.6);
+			CCArrayExt<CCSprite*> coinSlots = CCArray::create();
+			CCArrayExt<CCSprite*> coins = CCArray::create();
+			for (int i = 0; i < 3; i++) {
+				auto coinSlot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
+				coinSlot->setTag(i + 1001);
+				coinSlot->setScale(0.6);
+				coinSlots.push_back(coinSlot);
 
-			auto coin2Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
-			coin2Slot->setScale(0.6);
+				auto coin = CCSprite::createWithSpriteFrameName("secretCoinUI2_001.png");
+				coin->setTag(i + 1);
+				coin->setScale(0.6);
+				coins.push_back(coin);
+			}
 
-			auto coin3Slot = CCSprite::createWithSpriteFrameName("secretCoin_2_b_01_001.png");
-			coin3Slot->setScale(0.6);
+			bool balls[3] = {false};
+			// this is a fat middle finger for you and specifically you, 230v
+			for (int i = 0; i < 3; i++) {
+				if (level->m_coins > i) {
+					if (areCoinsVerified) {
+						if (verifiedCoins->objectForKey(levelID + "_" + std::to_string(i + 1) + weeklySuffix)) balls[i] = true;
+					} else if (levelIDInt == 0) {
+						if (i == 0) {
+							if (level->m_firstCoinVerified.value()) balls[i] = true;
+						} else if (i == 1) {
+							if (level->m_secondCoinVerified.value()) balls[i] = true;
+						} else if (i == 2) {
+							if (level->m_thirdCoinVerified.value()) balls[i] = true;
+						}
+					} else {
+						if (pendingCoins->objectForKey(levelID + "_" + std::to_string(i + 1) + weeklySuffix)) balls[i] = true;
+						coinSlots[i]->setColor({255, 175, 75});
+						coins[i]->setColor({255, 175, 75});
+					}
+				} else break;
+			}
 
-			auto coin1 = CCSprite::createWithSpriteFrameName("secretCoinUI2_001.png");
-			coin1->setScale(0.6);
-
-			auto coin2 = CCSprite::createWithSpriteFrameName("secretCoinUI2_001.png");
-			coin2->setScale(0.6);
-
-			auto coin3 = CCSprite::createWithSpriteFrameName("secretCoinUI2_001.png");
-			coin3->setScale(0.6);
-
-			// silver coin in levels on the server
-			if (areCoinsVerified) {
-				if (level->m_coins >= 1) {
-					if (verifiedCoins->objectForKey(levelID + "_1" + weeklySuffix)) menu->addChild(coin1);
-					else {
-						menu->addChild(coin1Slot);
-						if (collected[0]) {
-							coin1Slot->addChild(coin1);
-							coin1->setScale(1);
-							coin1->setPosition({ coin1Slot->getContentWidth()/2, coin1Slot->getContentHeight()/2 });
-							coin1->runAction(CCRepeatForever::create(CCSequence::create(fadeAction1)));
+			for (int i = 0; i < 3; i++) {
+				if (level->m_coins > i) {
+					if (balls[i]) {
+						menu->addChild(coins[i]);
+					} else {
+						menu->addChild(coinSlots[i]);
+						if (collected[i]) {
+							coinSlots[i]->addChild(coins[i]);
+							coins[i]->setScale(1);
+							coins[i]->setPosition({ coinSlots[i]->getContentWidth()/2, coinSlots[i]->getContentHeight()/2 });
+							auto actions = CCArray::create();
+							actions->addObject(CCFadeOut::create(1.f));
+							actions->addObject(CCFadeIn::create(1.f));
+							coins[i]->runAction(CCRepeatForever::create(CCSequence::create(actions)));
 						}
 					}
-				}
-				if (level->m_coins >= 2) {
-					if (verifiedCoins->objectForKey(levelID + "_2" + weeklySuffix)) menu->addChild(coin2);
-					else {
-						menu->addChild(coin2Slot);
-						if (collected[1]) {
-							coin2Slot->addChild(coin2);
-							coin2->setScale(1);
-							coin2->setPosition({ coin2Slot->getContentWidth()/2, coin2Slot->getContentHeight()/2 });
-							coin2->runAction(CCRepeatForever::create(CCSequence::create(fadeAction2)));
-						}
-					}
-				}
-				if (level->m_coins >= 3) {
-					if (verifiedCoins->objectForKey(levelID + "_3" + weeklySuffix)) menu->addChild(coin3);
-					else {
-						menu->addChild(coin3Slot);
-						if (collected[2]) {
-							coin3Slot->addChild(coin3);
-							coin3->setScale(1);
-							coin3->setPosition({ coin3Slot->getContentWidth()/2, coin3Slot->getContentHeight()/2 });
-							coin3->runAction(CCRepeatForever::create(CCSequence::create(fadeAction3)));
-						}
-					}
-				}
-			// silver coin in user created levels that havent been uploaded
-			// hence the level id 0
-			} else if (levelIDInt == 0) {
-				if (level->m_coins >= 1) {
-					if (level->m_firstCoinVerified.value()) menu->addChild(coin1);
-					else {
-						menu->addChild(coin1Slot);
-						if (collected[0]) {
-							coin1Slot->addChild(coin1);
-							coin1->setScale(1);
-							coin1->setPosition({ coin1Slot->getContentWidth()/2, coin1Slot->getContentHeight()/2 });
-							coin1->runAction(CCRepeatForever::create(CCSequence::create(fadeAction1)));
-						}
-					}
-				}
-				if (level->m_coins >= 2) {
-					if (level->m_secondCoinVerified.value()) menu->addChild(coin2);
-					else {
-						menu->addChild(coin2Slot);
-						if (collected[1]) {
-							coin2Slot->addChild(coin2);
-							coin2->setScale(1);
-							coin2->setPosition({ coin2Slot->getContentWidth()/2, coin2Slot->getContentHeight()/2 });
-							coin2->runAction(CCRepeatForever::create(CCSequence::create(fadeAction2)));
-						}
-					}
-				}
-				if (level->m_coins >= 3) {
-					if (level->m_thirdCoinVerified.value()) menu->addChild(coin3);
-					else {
-						menu->addChild(coin3Slot);
-						if (collected[2]) {
-							coin3Slot->addChild(coin3);
-							coin3->setScale(1);
-							coin3->setPosition({ coin3Slot->getContentWidth()/2, coin3Slot->getContentHeight()/2 });
-							coin3->runAction(CCRepeatForever::create(CCSequence::create(fadeAction3)));
-						}
-					}
-				}
-			// bronze coin
-			} else {
-				if (level->m_coins >= 1) {
-					if (pendingCoins->objectForKey(levelID + "_1" + weeklySuffix)) menu->addChild(coin1);
-					else {
-						menu->addChild(coin1Slot);
-						if (collected[0]) {
-							coin1Slot->addChild(coin1);
-							coin1->setScale(1);
-							coin1->setPosition({ coin1Slot->getContentWidth()/2, coin1Slot->getContentHeight()/2 });
-							coin1->runAction(CCRepeatForever::create(CCSequence::create(fadeAction1)));
-						}
-					}
-				}
-				if (level->m_coins >= 2) {
-					if (pendingCoins->objectForKey(levelID + "_2" + weeklySuffix)) menu->addChild(coin2);
-					else {
-						menu->addChild(coin2Slot);
-						if (collected[1]) {
-							coin2Slot->addChild(coin2);
-							coin2->setScale(1);
-							coin2->setPosition({ coin2Slot->getContentWidth()/2, coin2Slot->getContentHeight()/2 });
-							coin2->runAction(CCRepeatForever::create(CCSequence::create(fadeAction2)));
-						}
-					}
-				}
-				if (level->m_coins >= 3) {
-					if (pendingCoins->objectForKey(levelID + "_3" + weeklySuffix)) menu->addChild(coin3);
-					else {
-						menu->addChild(coin3Slot);
-						if (collected[2]) {
-							coin3Slot->addChild(coin3);
-							coin3->setScale(1);
-							coin3->setPosition({ coin3Slot->getContentWidth()/2, coin3Slot->getContentHeight()/2 });
-							coin3->runAction(CCRepeatForever::create(CCSequence::create(fadeAction3)));
-						}
-					}
-				}
-
-				coin1Slot->setColor({255, 175, 75});
-				coin2Slot->setColor({255, 175, 75});
-				coin3Slot->setColor({255, 175, 75});
-				coin1->setColor({255, 175, 75});
-				coin2->setColor({255, 175, 75});
-				coin3->setColor({255, 175, 75});
+				} else break;
 			}
 		}
 
