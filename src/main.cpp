@@ -3,6 +3,7 @@
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/EffectGameObject.hpp>
 #include <Geode/modify/CheckpointGameObject.hpp>
+#include <Geode/modify/GameObject.hpp>
 
 using namespace geode::prelude;
 
@@ -12,23 +13,11 @@ bool collected[3] = {false};
 bool savedCollected[3]	= {false};
 
 class $modify(MyCoinObject, EffectGameObject) {
-	bool m_isCoin = false;
-	int m_index = 0;
-
-	static EffectGameObject* create(char const* p0) {
-		auto object = EffectGameObject::create(p0);
-
-		// secretCoin_01_001.png
-		// secretCoin_2_01_001.png
-		if (std::string(p0).starts_with("secretCoin_")) {
-			as<MyCoinObject*>(object)->m_fields->m_isCoin = true;
-			as<MyCoinObject*>(object)->m_fields->m_index = coIndex;
-			coIndex++;
-		}
-
-		return object;
-	}
-
+	struct Fields {
+		bool m_isCoin = false;
+		int m_index = 0;
+	};
+	
 	#ifndef GEODE_IS_ANDROID
 	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
 		EffectGameObject::triggerObject(p0, p1, p2);
@@ -40,6 +29,25 @@ class $modify(MyCoinObject, EffectGameObject) {
 		}
 	}
 	#endif
+};
+
+class $modify(GameObject) {
+	static GameObject* createWithKey(int key) {
+		auto object = GameObject::createWithKey(key);
+
+		auto frame = ObjectToolbox::sharedState()->intKeyToFrame(key);
+		// secretCoin_01_001.png
+		// secretCoin_2_01_001.png
+		if (std::string(frame).starts_with("secretCoin_")) {
+			if (auto coin = typeinfo_cast<EffectGameObject*>(object)) {
+				as<MyCoinObject*>(coin)->m_fields->m_isCoin = true;
+				as<MyCoinObject*>(coin)->m_fields->m_index = coIndex;
+				coIndex++;
+			}
+		}
+
+		return object;
+	}
 };
 
 #ifndef GEODE_IS_ANDROID
@@ -109,19 +117,20 @@ class $modify(PlayLayer) {
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
-        self.setHookPriority("PauseLayer::create", -101); // cuz another fucking mod uses -100
+        Result<> plCreate = self.setHookPriority("PauseLayer::create", -101); // cuz another fucking mod uses -100
     }
 
-	static PauseLayer* create(bool p0) {
-		auto pl = PauseLayer::create(p0);
-		auto menu = pl->getChildByID("bottom-button-menu");
+	void customSetup() {
+		PauseLayer::customSetup();
+
+		auto menu = this->getChildByID("bottom-button-menu");
 
 		auto winSize = CCDirector::get()->getWinSize();
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
 
-		if (pl->getChildByID("better-pause-node")) {
+		if (this->getChildByID("better-pause-node")) {
 			menu->setVisible(false);
-		} else if (pl->getChildByID("classic-pause-node")) {
+		} else if (this->getChildByID("classic-pause-node")) {
 			menu = CCMenu::create();
 			menu->setAnchorPoint({0.5f, 0});
 			menu->setLayout(
@@ -133,10 +142,10 @@ class $modify(PauseLayer) {
 					->setCrossAxisLineAlignment(AxisAlignment::Center)
 					->setCrossAxisOverflow(true));
 			menu->setContentSize({30.f, 100.f});
-			pl->getChildByID("left-button-menu")->addChild(menu);
+			this->getChildByID("left-button-menu")->addChild(menu);
 			
 			menu->updateLayout();
-			pl->getChildByID("left-button-menu")->updateLayout();
+			this->getChildByID("left-button-menu")->updateLayout();
 		} else {
 			menu->setVisible(true);
 			menu->setLayout(
@@ -260,7 +269,7 @@ class $modify(PauseLayer) {
 		// cleanup right-button-menu and left-button-menu cuz theres too many buttons there now man
 		// and i dont really think its necessary to make a separate mod for just this
 		// this mod is pretty popular anyway
-		if (!pl->getChildByID("better-pause-node")) {
+		if (!this->getChildByID("better-pause-node")) {
 			auto rLayout = ColumnLayout::create()
 						->setGap(5.f)
 						->setAxisReverse(true)
@@ -279,24 +288,22 @@ class $modify(PauseLayer) {
 						->setCrossAxisLineAlignment(AxisAlignment::Center);
 
 
-			auto rMenu = pl->getChildByID("right-button-menu");
+			auto rMenu = this->getChildByID("right-button-menu");
 			rMenu->setAnchorPoint({1, 1});
 			rMenu->setPositionX(rMenu->getPositionX() + rMenu->getContentWidth()/2);
 			rMenu->setPositionY(rMenu->getPositionY() + rMenu->getContentHeight()/2);
-			if (pl->getChildByID("dankmeme.globed2/playerlist-menu")) {
+			if (this->getChildByID("dankmeme.globed2/playerlist-menu")) {
 				rMenu->setContentHeight(rMenu->getContentHeight() - 55.f);
 			}
 			rMenu->setLayout(rLayout);
 			rMenu->updateLayout();
 
-			auto lMenu = pl->getChildByID("left-button-menu");
+			auto lMenu = this->getChildByID("left-button-menu");
 			lMenu->setAnchorPoint({0, 0.5});
 			lMenu->setPositionX(lMenu->getPositionX() - lMenu->getContentWidth()/2);
 			lMenu->setLayout(lLayout);
 			lMenu->updateLayout();
 		}
-
-		return pl;
 	}
 };
 
