@@ -1,5 +1,5 @@
 ## v1.2.0
-- Updated for 2.2074
+- Updated for GD 2.2074
 ## v1.1.3
 - Fixed an issue with BetterPause on non 16:9 screens
 ## v1.1.2
