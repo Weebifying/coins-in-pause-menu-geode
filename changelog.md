@@ -1,3 +1,6 @@
+## v1.2.1
+- Updated for GD 2.2081/Geode 5.0.0
+- Fixes the coins order issue
 ## v1.2.0
 - Updated for GD 2.2074
 ## v1.1.3

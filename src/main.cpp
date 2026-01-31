@@ -8,112 +8,6 @@
 using namespace geode::prelude;
 
 int mainLevels[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,3001,4001,4002,4003,5001,5002,5003,5004};
-int coIndex = 0;
-bool collected[3] = {false};
-bool savedCollected[3]	= {false};
-
-class $modify(MyCoinObject, EffectGameObject) {
-	struct Fields {
-		bool m_isCoin = false;
-		int m_index = 0;
-	};
-	
-	#ifndef GEODE_IS_ANDROID
-	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		EffectGameObject::triggerObject(p0, p1, p2);
-		if (m_fields->m_isCoin) {
-			collected[m_fields->m_index] = true;
-			if (!p0->m_level->isPlatformer()) {
-				savedCollected[m_fields->m_index] = true;
-			}
-		}
-	}
-	#endif
-};
-
-class $modify(GameObject) {
-	static GameObject* createWithKey(int key) {
-		auto object = GameObject::createWithKey(key);
-
-		auto frame = ObjectToolbox::sharedState()->intKeyToFrame(key);
-		// secretCoin_01_001.png
-		// secretCoin_2_01_001.png
-		if (std::string(frame).starts_with("secretCoin_")) {
-			if (auto coin = typeinfo_cast<EffectGameObject*>(object)) {
-				as<MyCoinObject*>(coin)->m_fields->m_isCoin = true;
-				as<MyCoinObject*>(coin)->m_fields->m_index = coIndex;
-				coIndex++;
-			}
-		}
-
-		return object;
-	}
-};
-
-#ifndef GEODE_IS_ANDROID
-class $modify(CheckpointGameObject) {
-	void triggerObject(GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		CheckpointGameObject::triggerObject(p0, p1, p2);
-
-		if (p0->m_level->isPlatformer()) {
-			for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
-		}
-	}
-};
-#endif
-
-
-class $modify(PlayLayer) {
-	bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
-		coIndex = 0;
-		for (int i = 0; i < 3; i++) {
-			savedCollected[i] = false;
-			collected[i] = false;
-		}
-		return PlayLayer::init(level, useReplay, dontCreateObjects);
-	}
-
-	void resetLevel() {
-		PlayLayer::resetLevel();
-
-		if (!this->m_level->isPlatformer())
-			for (int i = 0; i < 3; i++) savedCollected[i] = false;
-
-		for (int i = 0; i < 3; i++) collected[i] = savedCollected[i];
-
-	}
-
-	void fullReset() {
-		PlayLayer::fullReset();
-		
-		for (int i = 0; i < 3; i++) {
-			savedCollected[i] = false;
-			collected[i] = false;
-		}
-	}
-
-	void resumeAndRestart(bool fullReset) {
-		PlayLayer::resumeAndRestart(fullReset);
-
-		if (fullReset) {
-			for (int i = 0; i < 3; i++) {
-				savedCollected[i] = false;
-				collected[i] = false;
-			}
-		}
-	}
-
-	void togglePracticeMode(bool isPractice) {
-		PlayLayer::togglePracticeMode(isPractice);
-
-		if (!isPractice) {
-			for (int i = 0; i < 3; i++) {
-				savedCollected[i] = false;
-				collected[i] = false;
-			}
-		}
-	}
-};
 
 class $modify(PauseLayer) {
 	static void onModify(auto& self) {
@@ -124,9 +18,11 @@ class $modify(PauseLayer) {
 		PauseLayer::customSetup();
 
 		auto menu = this->getChildByID("bottom-button-menu");
-
+		auto playLayer = PlayLayer::get();
 		auto winSize = CCDirector::get()->getWinSize();
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
+
+		playLayer->m_collectedItems->writeToFile("C:/Users/weebi/Downloads/idk.plist");
 
 		if (this->getChildByID("better-pause-node")) {
 			menu->setVisible(false);
@@ -166,7 +62,7 @@ class $modify(PauseLayer) {
 		if (levelIDKey.size() != 2*levelID.size() + 1) weeklySuffix = levelIDKey.substr(2*levelID.size() + 1, 7);
 
 		// check if level is an official level
-		if (level->m_levelType == GJLevelType::Local || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]))) {
+		if (level->m_levelType == GJLevelType::Main || (std::find(mainLevels, mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]), levelIDInt) != mainLevels + sizeof(mainLevels)/sizeof(mainLevels[0]))) {
 
 			CCArrayExt<CCSprite*> coinSlots = CCArray::create();
 			CCArrayExt<CCSprite*> coins = CCArray::create();
@@ -188,7 +84,7 @@ class $modify(PauseLayer) {
 						menu->addChild(coins[i]);
 					} else {
 						menu->addChild(coinSlots[i]);
-						if (collected[i]) {
+						if (playLayer->m_collectedItems->objectForKey(std::to_string(i+1))) {
 							coinSlots[i]->addChild(coins[i]);
 							coins[i]->setScale(1);
 							coins[i]->setPosition({ coinSlots[i]->getContentWidth()/2, coinSlots[i]->getContentHeight()/2 });
@@ -249,7 +145,7 @@ class $modify(PauseLayer) {
 						menu->addChild(coins[i]);
 					} else {
 						menu->addChild(coinSlots[i]);
-						if (collected[i]) {
+						if (playLayer->m_collectedItems->objectForKey(std::to_string(i+1))) {
 							coinSlots[i]->addChild(coins[i]);
 							coins[i]->setScale(1);
 							coins[i]->setPosition({ coinSlots[i]->getContentWidth()/2, coinSlots[i]->getContentHeight()/2 });
@@ -306,40 +202,3 @@ class $modify(PauseLayer) {
 		}
 	}
 };
-
-#ifdef GEODE_IS_ANDROID
-void EffectGameObject_triggerObject(MyCoinObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-		self->triggerObject(p0, p1, p2);
-
-		if (self->m_fields->m_isCoin) {
-			collected[self->m_fields->m_index] = true;
-			if (!p0->m_level->isPlatformer()) {
-				savedCollected[self->m_fields->m_index] = true;
-			}
-		}
-	}
-
-void CheckpointGameObject_triggerObject(CheckpointGameObject* self, GJBaseGameLayer* p0, int p1, gd::vector<int> const* p2) {
-	self->triggerObject(p0, p1, p2);
-
-	if (p0->m_level->isPlatformer()) {
-		for (int i = 0; i < 3; i++) savedCollected[i] = collected[i];
-	}
-}
-
-
-$execute {
-    Mod::get()->hook(
-        dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN16EffectGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"),
-        &EffectGameObject_triggerObject,
-        "EffectGameObject::triggerObject",
-        tulip::hook::TulipConvention::Default
-    );
-	Mod::get()->hook(
-        dlsym(dlopen("libcocos2dcpp.so", RTLD_NOW), "_ZN20CheckpointGameObject13triggerObjectEP15GJBaseGameLayeriPKSt6vectorIiSaIiEE"),
-        &CheckpointGameObject_triggerObject,
-        "CheckpointGameObject::triggerObject",
-        tulip::hook::TulipConvention::Default
-    );
-}
-#endif
