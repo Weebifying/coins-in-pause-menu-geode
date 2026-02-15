@@ -1,5 +1,5 @@
 {
-	"geode": "5.0.0-alpha.1",
+	"geode": "5.0.0-beta.1",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -21,6 +21,6 @@
 		]
 	},
 	"dependencies": {
-		"geode.node-ids": ">=1.21.0"
+		"geode.node-ids": ">=1.22.0"
 	}
 }

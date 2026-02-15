@@ -8,7 +8,7 @@ else()
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(CoinsinPauseMenu VERSION 1.2.2)
+project(CoinsinPauseMenu VERSION 1.2.1)
 
 add_library(${PROJECT_NAME} SHARED
     src/main.cpp
