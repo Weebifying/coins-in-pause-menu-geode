@@ -22,8 +22,6 @@ class $modify(PauseLayer) {
 		auto winSize = CCDirector::get()->getWinSize();
 		auto level = GameManager::sharedState()->getPlayLayer()->m_level;
 
-		playLayer->m_collectedItems->writeToFile("C:/Users/weebi/Downloads/idk.plist");
-
 		if (this->getChildByID("better-pause-node")) {
 			menu->setVisible(false);
 		} else if (this->getChildByID("classic-pause-node")) {
